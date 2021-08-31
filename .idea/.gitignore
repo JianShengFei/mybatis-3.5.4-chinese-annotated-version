@@ -2,7 +2,7 @@
 /shelf/
 /workspace.xml
 # Datasource local storage ignored files
-/../../../../../../:\projects\java_project\orther_project\mybatis-3.5.4-chinese-annotated-version\.idea/dataSources/
+/dataSources/
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
