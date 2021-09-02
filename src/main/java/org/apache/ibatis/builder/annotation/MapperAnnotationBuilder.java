@@ -126,9 +126,11 @@ public class MapperAnnotationBuilder {
         }
         if (getAnnotationWrapper(method, false, Select.class, SelectProvider.class).isPresent()
             && method.getAnnotation(ResultMap.class) == null) {
+          // 映射结果集
           parseResultMap(method);
         }
         try {
+          // 把mapper接口和xml关联起来
           parseStatement(method);
         } catch (IncompleteElementException e) {
           configuration.addIncompleteMethod(new MethodResolver(this, method));
@@ -162,12 +164,16 @@ public class MapperAnnotationBuilder {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
     // this flag is set at XMLMapperBuilder#bindMapperForNamespace
+    // Spring 可能不知道真正的资源名称，所以我们检查一个标志
+    // 防止再次加载资源两次
+    // 此标志设置在 XMLMapperBuilderbindMapperForNamespace
     if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       // #1347
       InputStream inputStream = type.getResourceAsStream("/" + xmlResource);
       if (inputStream == null) {
         // Search XML mapper that is not in the module but in the classpath.
+        // 搜索不在模块中但在类路径中的 XML 映射器。
         try {
           inputStream = Resources.getResourceAsStream(type.getClassLoader(), xmlResource);
         } catch (IOException e2) {
@@ -181,11 +187,17 @@ public class MapperAnnotationBuilder {
     }
   }
 
+  /**
+   * 检查是否配置了二级缓存
+   */
   private void parseCache() {
     CacheNamespace cacheDomain = type.getAnnotation(CacheNamespace.class);
     if (cacheDomain != null) {
+      // 缓存大小
       Integer size = cacheDomain.size() == 0 ? null : cacheDomain.size();
+      // 刷新间隔
       Long flushInterval = cacheDomain.flushInterval() == 0 ? null : cacheDomain.flushInterval();
+      //
       Properties props = convertToProperties(cacheDomain.properties());
       assistant.useNewCache(cacheDomain.implementation(), cacheDomain.eviction(), flushInterval, size, cacheDomain.readWrite(), cacheDomain.blocking(), props);
     }
@@ -203,6 +215,9 @@ public class MapperAnnotationBuilder {
     return props;
   }
 
+  /**
+   * 检查是否配置了二级缓存
+   */
   private void parseCacheRef() {
     CacheNamespaceRef cacheDomainRef = type.getAnnotation(CacheNamespaceRef.class);
     if (cacheDomainRef != null) {
@@ -308,6 +323,7 @@ public class MapperAnnotationBuilder {
       String keyColumn = null;
       if (SqlCommandType.INSERT.equals(sqlCommandType) || SqlCommandType.UPDATE.equals(sqlCommandType)) {
         // first check for SelectKey annotation - that overrides everything else
+        // 首先检查 SelectKey 注释 - 覆盖其他所有内容
         SelectKey selectKey = getAnnotationWrapper(method, false, SelectKey.class).map(x -> (SelectKey)x.getAnnotation()).orElse(null);
         if (selectKey != null) {
           keyGenerator = handleSelectKeyAnnotation(selectKey, mappedStatementId, getParameterType(method), languageDriver);
@@ -660,6 +676,7 @@ public class MapperAnnotationBuilder {
     }
     if (errorIfNoMatch && annotationWrapper == null && !statementAnnotations.isEmpty()) {
       // Annotations exist, but there is no matching one for the specified databaseId
+      // 注解存在，但没有与指定的 databaseId 匹配的注解
       throw new BuilderException(
           String.format(
               "Could not find a statement annotation that correspond a current database or default statement on method '%s.%s'. Current database id is [%s].",

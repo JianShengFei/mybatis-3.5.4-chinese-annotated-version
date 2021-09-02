@@ -48,6 +48,7 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 
 /**
+ * @Description mybatis xml 配置构建与解析
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
@@ -117,7 +118,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       // 加载构建VFS含义是虚拟文件系统；主要是通过程序能够方便读取本地文件系统、FTP文件系统等系统中的文件资源
       loadCustomVfs(settings);
 
-      // 加载构建日志实现, 主要是从初始化类容器中
+      // 加载构建日志实现, 主要是从初始化类容器中  new Configuration() 时将一些基础的信息已经初始化
       loadCustomLogImpl(settings);
 
       // 读取类型别名配置, 这里加载的类别名都会放到 configuration 的 typeAliasRegistry 容器中
@@ -263,8 +264,14 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 将 xml 配置解析到 configuration 对象中
+   * @param context
+   * @throws Exception
+   */
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
+      // 将 xml 节点 文件转换为 Properties 文件
       Properties defaults = context.getChildrenAsProperties();
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
@@ -424,7 +431,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
 
-          // resource、url 通过输入流获取对象
+          // resource、url 通过输入流获取对象, 类全路径 这里基本和扫描包的代码内部相同
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             try(InputStream inputStream = Resources.getResourceAsStream(resource)) {
@@ -439,6 +446,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             }
           } else if (resource == null && url == null && mapperClass != null) {
             Class<?> mapperInterface = Resources.classForName(mapperClass);
+            // 类 直接调用 addMapper() 方法
             configuration.addMapper(mapperInterface);
           } else {
             throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");

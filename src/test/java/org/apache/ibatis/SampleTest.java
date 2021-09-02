@@ -4,14 +4,18 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import org.apache.ibatis.autoconstructor.AutoConstructorMapper;
 import org.apache.ibatis.autoconstructor.PrimitiveSubject;
+import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.submitted.ognlstatic.StaticClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -51,5 +55,42 @@ public class SampleTest {
       }
 
     }
+
+    /**
+     * mybatis 内置包下类的扫描工具
+     */
+    @Test
+    public void test02() {
+      ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
+      resolverUtil.find(new ResolverUtil.IsA(Object.class), "org.apache.ibatis.mapping");
+      Set<Class<? extends Class<?>>> mapperSet = resolverUtil.getClasses();
+      for (Class<?> mapperClass : mapperSet) {
+        System.out.println(mapperClass);
+      }
+    }
+
+    /**
+     * java8 新特性的用法例子
+     */
+    @Test
+    public void test03() {
+      int compute1 = this.compute(5, value -> value * value); // 25
+      System.out.println(compute1);
+
+      int compute2 = this.compute(5, value -> value + value); // 10
+      System.out.println(compute2);
+
+      int compute3 = this.compute(5, value -> value - 2); // 3
+      System.out.println(compute3);
+
+      int compute4 = this.compute(5, Integer::valueOf); // 5
+      System.out.println(compute4);
+    }
+
+    private int compute(int a, Function<Integer, Integer> function) {
+      return function.apply(a);
+    }
+
+
 
 }
