@@ -159,8 +159,11 @@ public class XMLMapperBuilder extends BaseBuilder {
     for (XNode context : list) {
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
+        // 解析xml节点
         statementParser.parseStatementNode();
       } catch (IncompleteElementException e) {
+        // 解析节点失败时(失败原因是一些节点属于残缺节点，比如select 没有 resultMap 节点), 将这些节点添加到残缺节点集合中
+        // 等到。。。(什么时候) 再解析, 并从集合中清除这个节点  #question 1
         configuration.addIncompleteStatement(statementParser);
       }
     }
@@ -439,6 +442,9 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 绑定 xml 和 xml指定的namespace mapper 接口
+   */
   private void bindMapperForNamespace() {
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
