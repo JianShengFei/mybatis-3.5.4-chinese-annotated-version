@@ -51,8 +51,9 @@ public class XMLScriptBuilder extends BaseBuilder {
   }
 
 
-  // 初始化xml节点，很明显 就是xml中 select 语句中写的判断 循环等表达式
+
   private void initNodeHandlerMap() {
+    // 初始化xml节点，很明显 就是xml中 select 语句中写的判断 循环等表达式
     nodeHandlerMap.put("trim", new TrimHandler());
     nodeHandlerMap.put("where", new WhereHandler());
     nodeHandlerMap.put("set", new SetHandler());
@@ -84,6 +85,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     for (int i = 0; i < children.getLength(); i++) {
       XNode child = node.newXNode(children.item(i));
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
+        // 增删改查节点
         String data = child.getStringBody("");
         TextSqlNode textSqlNode = new TextSqlNode(data);
         // 是否为动态sql
@@ -94,6 +96,7 @@ public class XMLScriptBuilder extends BaseBuilder {
           contents.add(new StaticTextSqlNode(data));
         }
       } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+        // if else for 。。。条件循环等节点
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
