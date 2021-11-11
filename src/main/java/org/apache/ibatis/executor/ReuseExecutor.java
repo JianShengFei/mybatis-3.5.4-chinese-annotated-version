@@ -34,6 +34,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 重用执行器，缓存同一个SQL的Statement，避免Statement频繁创建，优化性能
  * @author Clinton Begin
  */
 public class ReuseExecutor extends BaseExecutor {

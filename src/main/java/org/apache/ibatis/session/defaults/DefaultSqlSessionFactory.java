@@ -87,20 +87,31 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   *
+   * @param execType 执行类型
+   * @param level 事务隔离级别枚举
+   * @param autoCommit 是否自动提交
+   * @return
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+      // environments 元素定义了如何配置环境
+      // 对应xml标签<environments> ,这个在配置文件解析的时候就已经存放到configuration中了。
       final Environment environment = configuration.getEnvironment();
-      // 事务工厂
+      // 获取事务工厂对象 默认 ManagedTransactionFactory
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
-      // 实例化一个事务
+      // 实例化一个事务工厂 创建事务
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
-      // 创建一个执行器
+      // 通过事务创建一个执行器
       final Executor executor = configuration.newExecutor(tx, execType);
       // 封装返回一个 SqlSession
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
-      closeTransaction(tx); // may have fetched a connection so lets call close()
+      // may have fetched a connection so lets call close()
+      // 捕获到异常后，可能已经创建了事务  在这里调用下关闭方法
+      closeTransaction(tx);
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
     } finally {
       ErrorContext.instance().reset();
@@ -123,6 +134,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       final Executor executor = configuration.newExecutor(tx, execType);
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
+      // #question 3 ？？？ 这里为什么就不用调用关闭连接的方法
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
     } finally {
       ErrorContext.instance().reset();

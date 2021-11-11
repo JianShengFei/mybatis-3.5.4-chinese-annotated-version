@@ -62,6 +62,13 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /*
+    SqlSessionFactory 构建 主要有三类建构方法
+    一种是通过Reader对象读取文本文件
+    另一种则是通过输入流读取文件内容
+    最后一种通过 Configuration 直接创建
+   */
+
   public SqlSessionFactory build(InputStream inputStream) {
     return build(inputStream, null, null);
   }

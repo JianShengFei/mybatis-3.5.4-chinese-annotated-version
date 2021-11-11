@@ -119,7 +119,9 @@ public class JdbcTransaction implements Transaction {
         // and they mandate a commit/rollback before closing the connection.
         // A workaround is setting the autocommit to true before closing the connection.
         // Sybase throws an exception here.
+        // 在关闭连接前设置自动提交为 true
         if (log.isDebugEnabled()) {
+          // debug日志级别  打印 关闭的连接
           log.debug("Resetting autocommit to true on JDBC Connection [" + connection + "]");
         }
         connection.setAutoCommit(true);

@@ -44,12 +44,21 @@ public class MapperRegistry {
     this.config = config;
   }
 
+  /**
+   *
+   * @param type 当前传入的Mapper接口  例如 UserMapper.class
+   * @param sqlSession 当前会话
+   * @param <T>
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    // 获取mapper接口 映射方法代理工厂类
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
     if (mapperProxyFactory == null) {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
+    // 这里可以看的出来  mybatis 初始化的时候并不会创建Mapper实例，只是放到 knownMappers 中  获取的时候才会 newInstance
     try {
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
@@ -79,6 +88,7 @@ public class MapperRegistry {
         // mapper parser. If the type is already known, it won't try.
         // 在解析器运行之前添加类型很重要, 否则绑定可能会被自动尝试, 映射器解析器。如果类型已知，则不会尝试。
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
+        // 解析mapper xml  中的方法的结果集等等信息
         parser.parse();
         loadCompleted = true;
       } finally {

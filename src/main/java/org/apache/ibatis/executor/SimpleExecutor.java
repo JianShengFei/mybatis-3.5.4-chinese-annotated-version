@@ -32,6 +32,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 简单执行器，每次执行都创建新的Statement
  * @author Clinton Begin
  */
 public class SimpleExecutor extends BaseExecutor {
@@ -58,7 +59,10 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
-      // 从配置中获取需要执行的sql
+      /*
+        创建RoutingStatementHandler，装饰者模式
+        根据StatementType创建[Simple/Prepared/Callable]StatementHandler
+       */
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.query(stmt, resultHandler);

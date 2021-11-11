@@ -54,6 +54,11 @@ public class ParamNameResolver {
 
   private boolean hasParamAnnotation;
 
+  /**
+   * 参数名称映射转换对象
+   * @param config
+   * @param method
+   */
   public ParamNameResolver(Configuration config, Method method) {
     this.useActualParamName = config.isUseActualParamName();
     final Class<?>[] paramTypes = method.getParameterTypes();
@@ -77,16 +82,20 @@ public class ParamNameResolver {
       if (name == null) {
         // @Param was not specified.
         if (useActualParamName) {
+          // 如果使用实际的参数名，则通过反射获取参数名。
+          // JDK8编译类加–parameters参数可以保留参数名称，否则得到的是arg0,arg1这种无意义的参数名
           name = getActualParamName(method, paramIndex);
         }
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
+          // 如果名称还是为空，则可以使用下标来获取参数:#{param1},#{param2}...
           name = String.valueOf(map.size());
         }
       }
       map.put(paramIndex, name);
     }
+    // 返回不可变的集合
     names = Collections.unmodifiableSortedMap(map);
   }
 

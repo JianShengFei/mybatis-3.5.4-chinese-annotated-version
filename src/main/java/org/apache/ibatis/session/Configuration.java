@@ -146,6 +146,7 @@ public class Configuration {
    */
   protected Class<?> configurationFactory;
 
+  // 存放配置和 mapper 映射的封装对象
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
   protected final InterceptorChain interceptorChain = new InterceptorChain();
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
@@ -670,9 +671,12 @@ public class Configuration {
   }
 
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+    // 重复代码？？？
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+
     Executor executor;
+    // 根据类型创建执行器
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
@@ -680,9 +684,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 对执行器装饰
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 封装插件  #question 2 看不懂这个插件如何封装的
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -869,7 +875,7 @@ public class Configuration {
     cacheRefMap.put(namespace, referencedNamespace);
   }
 
-  /*
+  /**
    * Parses all the unprocessed statement nodes in the cache. It is recommended
    * to call this method once all the mappers are added as it provides fail-fast
    * statement validation.

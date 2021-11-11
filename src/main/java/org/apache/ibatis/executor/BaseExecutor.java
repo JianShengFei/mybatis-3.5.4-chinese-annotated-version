@@ -169,6 +169,7 @@ public abstract class BaseExecutor implements Executor {
       deferredLoads.clear();
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
+        // 清空本地缓存
         clearLocalCache();
       }
     }

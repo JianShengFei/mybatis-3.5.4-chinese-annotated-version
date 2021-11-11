@@ -113,6 +113,7 @@ public class MapperAnnotationBuilder {
   }
 
   public void parse() {
+    // TODO Waiting task 这里后面再详细看一下  是怎么解析的
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
       loadXmlResource();

@@ -33,6 +33,8 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 支持二级缓存的执行器，装饰者模式
+ * 缓存执行器不继承BaseExecutor 在其他三个执行器的基础上进行装饰一次
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -84,11 +86,29 @@ public class CachingExecutor implements Executor {
 
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    // 根据实参完成SQL的解析，替换#{}和${}，得到可以直接执行的SQL
     BoundSql boundSql = ms.getBoundSql(parameterObject);
+    // System.err.println("###SQL:" + boundSql.getSql());
+    // 根据执行的 [StatementID+SQL+参数+分页] 来创建缓存键，只有这些数据全部相同才能命中缓存。
     CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
     return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
+  /**
+   * CachingExecutor是支持二级缓存的，使用【装饰者模式】，内部依赖一个Executor
+   * CachingExecutor本身不会处理数据库操作，它的作用就是判断查询是否命中二级缓存，没有命中则委派delegate去查询，然后将结果缓存起来。
+   * 如下是CachingExecutor重写的query()方法。
+   *
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param resultHandler
+   * @param key
+   * @param boundSql
+   * @param <E>
+   * @return
+   * @throws SQLException
+   */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {

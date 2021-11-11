@@ -39,6 +39,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * 真正去执行sql的类
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -74,6 +75,10 @@ public class MapperMethod {
       }
       case SELECT:
         if (method.returnsVoid() && method.hasResultHandler()) {
+          /**
+           方法返回值为Void，且参数中有ResultHandler,将查询结果交给ResultHandler处理，直接返回null
+           @see ResultHandler
+           */
           executeWithResultHandler(sqlSession, args);
           result = null;
         } else if (method.returnsMany()) {
@@ -84,6 +89,7 @@ public class MapperMethod {
           result = executeForCursor(sqlSession, args);
         } else {
           Object param = method.convertArgsToSqlCommandParam(args);
+          // 绕一大圈还是会调用sqlSession中的方法, 不断封装(参数解析，xml方法解析...)通过调用代理对象去操作
           result = sqlSession.selectOne(command.getName(), param);
           if (method.returnsOptional()
               && (result == null || !method.getReturnType().equals(result.getClass()))) {
@@ -142,6 +148,7 @@ public class MapperMethod {
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);
+      // 最终会调用SqlSession 中方法
       result = sqlSession.selectList(command.getName(), param, rowBounds);
     } else {
       result = sqlSession.selectList(command.getName(), param);
@@ -218,7 +225,9 @@ public class MapperMethod {
 
   public static class SqlCommand {
 
+    // 接口全限定名+方法名，定位要执行的唯一的sql
     private final String name;
+    // 操作类型 增删改查什么的
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
@@ -274,16 +283,27 @@ public class MapperMethod {
 
   public static class MethodSignature {
 
+    // 是否返回多个对象？如List
     private final boolean returnsMany;
+    // 是否返回Map
     private final boolean returnsMap;
+    // 是否void返回
     private final boolean returnsVoid;
+    // 是否返回游标对象
     private final boolean returnsCursor;
+    // 是否返回Optional对象
     private final boolean returnsOptional;
+    // 返回类型
     private final Class<?> returnType;
+    // 解析方法上@MapKey注解的值
     private final String mapKey;
+    // ResultHandler所在参数列表的下标(对查询结果做处理)
     private final Integer resultHandlerIndex;
+    // RowBounds所在参数列表的下标(限制返回的结果数量)
     private final Integer rowBoundsIndex;
+    // 参数名称解析器，对于加了@Param注解的参数，xml中可以直接使用
     private final ParamNameResolver paramNameResolver;
+
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
